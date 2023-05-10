@@ -11,6 +11,8 @@ class Tracker(commands.Cog):
         await ctx.send("Call time tracker on progress.")
 
 
+
+
 # Setup cog for main.py.
 def setup(client):
     client.add_cog(Tracker(client))
