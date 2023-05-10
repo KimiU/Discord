@@ -1,0 +1,138 @@
+obj.__abstractmethods__ = frozenset()
+obj.__class__ = <class 'discord.member.Member'>
+obj.__delattr__ = <method-wrapper '__delattr__' of Member object at 0x057E8D48>
+obj.__dir__ = <built-in method __dir__ of Member object at 0x057E8D48>
+obj.__doc__ = Represents a Discord member to a :class:`Guild`.
+
+    This implements a lot of the functionality of :class:`User`.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two members are equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: x != y
+
+            Checks if two members are not equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: hash(x)
+
+            Returns the member's hash.
+
+        .. describe:: str(x)
+
+            Returns the member's name with the discriminator.
+
+    Attributes
+    ----------
+    joined_at: Optional[:class:`datetime.datetime`]
+        A datetime object that specifies the date and time in UTC that the member joined the guild.
+        If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
+    activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
+        The activities that the user is currently doing.
+    guild: :class:`Guild`
+        The guild that the member belongs to.
+    nick: Optional[:class:`str`]
+        The guild specific nickname of the user.
+    premium_since: Optional[:class:`datetime.datetime`]
+        A datetime object that specifies the date and time in UTC when the member used their
+        Nitro boost on the guild, if available. This could be ``None``.
+
+obj.__eq__ = <bound method Member.__eq__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__format__ = <built-in method __format__ of Member object at 0x057E8D48>
+obj.__ge__ = <method-wrapper '__ge__' of Member object at 0x057E8D48>
+obj.__getattribute__ = <method-wrapper '__getattribute__' of Member object at 0x057E8D48>
+obj.__gt__ = <method-wrapper '__gt__' of Member object at 0x057E8D48>
+obj.__hash__ = <bound method Member.__hash__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__init__ = <bound method Member.__init__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__init_subclass__ = <built-in method __init_subclass__ of ABCMeta object at 0x03F45378>
+obj.__le__ = <method-wrapper '__le__' of Member object at 0x057E8D48>
+obj.__lt__ = <method-wrapper '__lt__' of Member object at 0x057E8D48>
+obj.__module__ = discord.member
+obj.__ne__ = <bound method Member.__ne__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__new__ = <built-in method __new__ of type object at 0x7AC86B78>
+obj.__reduce__ = <built-in method __reduce__ of Member object at 0x057E8D48>
+obj.__reduce_ex__ = <built-in method __reduce_ex__ of Member object at 0x057E8D48>
+obj.__repr__ = <bound method Member.__repr__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__setattr__ = <method-wrapper '__setattr__' of Member object at 0x057E8D48>
+obj.__sizeof__ = <built-in method __sizeof__ of Member object at 0x057E8D48>
+obj.__slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status', 'activities', 'guild', 'nick', '_user', '_state')
+obj.__str__ = <bound method Member.__str__ of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.__subclasshook__ = <bound method User.__subclasshook__ of <class 'discord.member.Member'>>
+obj._abc_impl = <_abc_data object at 0x04520B20>
+obj._client_status = {None: 'offline'}
+obj._copy = <bound method Member._copy of <class 'discord.member.Member'>>
+obj._from_message = <bound method Member._from_message of <class 'discord.member.Member'>>
+obj._from_presence_update = <bound method Member._from_presence_update of <class 'discord.member.Member'>>
+obj._get_channel = <bound method Member._get_channel of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._presence_update = <bound method Member._presence_update of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._roles = SnowflakeList('Q', [788493016960466956])
+obj._state = <discord.state.ConnectionState object at 0x04F3E808>
+obj._try_upgrade = <bound method Member._try_upgrade of <class 'discord.member.Member'>>
+obj._update = <bound method Member._update of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._update_from_message = <bound method Member._update_from_message of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._update_inner_user = <bound method Member._update_inner_user of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._update_roles = <bound method Member._update_roles of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj._user = _DuB_#6762
+obj.activities = ()
+obj.activity = None
+obj.add_roles = <bound method Member.add_roles of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.avatar = 58b54e1aa2bcd11d8d872f79c557f573
+obj.avatar_url = https://cdn.discordapp.com/avatars/178414672876273664/58b54e1aa2bcd11d8d872f79c557f573.webp?size=1024
+obj.avatar_url_as = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.ban = <bound method Member.ban of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.block = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.bot = False
+obj.color = #e74c3c
+obj.colour = #e74c3c
+obj.create_dm = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.created_at = 2016-05-07 07:56:12.798000
+obj.default_avatar = green
+obj.default_avatar_url = https://cdn.discordapp.com/embed/avatars/2.png
+obj.desktop_status = offline
+obj.discriminator = 6762
+obj.display_name = _DuB_
+obj.dm_channel = None
+obj.edit = <bound method Member.edit of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.fetch_message = <bound method Messageable.fetch_message of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.guild = test nla
+obj.guild_permissions = <Permissions value=2147483647>
+obj.history = <bound method Messageable.history of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.id = 178414672876273664
+obj.is_avatar_animated = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.is_blocked = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.is_friend = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.is_on_mobile = <bound method Member.is_on_mobile of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.joined_at = 2020-12-15 19:41:22.881000
+obj.kick = <bound method Member.kick of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.mention = <@178414672876273664>
+obj.mentioned_in = <bound method Member.mentioned_in of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.mobile_status = offline
+obj.move_to = <bound method Member.move_to of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.mutual_friends = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.name = _DuB_
+obj.nick = None
+obj.permissions_in = <bound method Member.permissions_in of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.pins = <bound method Messageable.pins of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.premium_since = None
+obj.profile = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.public_flags = <PublicUserFlags value=0>
+obj.raw_status = offline
+obj.relationship = None
+obj.remove_friend = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.remove_roles = <bound method Member.remove_roles of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.roles = [<Role id=788490912015056976 name='@everyone'>, <Role id=788493016960466956 name='admin'>]
+obj.send = <bound method Messageable.send of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.send_friend_request = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.status = offline
+obj.system = False
+obj.top_role = admin
+obj.trigger_typing = <bound method Messageable.trigger_typing of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.typing = <bound method Messageable.typing of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.unban = <bound method Member.unban of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.unblock = <bound method flatten_user.<locals>.generate_function.<locals>.general of <Member id=178414672876273664 name='_DuB_' discriminator='6762' bot=False nick=None guild=<Guild id=788490912015056976 name='test nla' shard_id=None chunked=False member_count=5>>>
+obj.voice = <VoiceState self_mute=True self_deaf=False self_stream=False channel=<VoiceChannel id=788490912015056980 name='General' position=0 bitrate=64000 user_limit=0 category_id=788490912015056978>>
+obj.web_status = offline
