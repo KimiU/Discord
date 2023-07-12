@@ -4,9 +4,9 @@ from manager import unitils, bot
 
 dev = False
 if dev:
-    token = "Nzg4NDkzMjcxMzkwNzQ4NzM1.X9kTlQ.QQ24Tyo-FA1BQ_MFqHNRnwFPSBc"
+    token = "*"
 else:
-    token = "MTA5MjgwNDI0NzgyMjgxNTI0Mg.GmbEDE.xhl4db11ugiwMW3r0h9yOx3wgeqS3ew7szuZDM"
+    token = "*"
 
 
 client = commands.Bot(command_prefix='!')
