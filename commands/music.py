@@ -1,79 +1,143 @@
-import os
+"""Simple per-server music queue. Streams audio with yt-dlp + FFmpeg (no files on disk).
 
-import youtube_dl
-from discord.ext import commands
+Requires FFmpeg on PATH. youtube_dl is dead; yt-dlp is its maintained fork.
+"""
+import asyncio
+import logging
+from collections import deque
+from dataclasses import dataclass
+from typing import Deque, Dict
+
 import discord
+from discord.ext import commands
+
+log = logging.getLogger(__name__)
+
+YDL_OPTS = {
+    "format": "bestaudio/best",
+    "noplaylist": True,
+    "quiet": True,
+    "default_search": "ytsearch",  # lets `!play some song name` work, not only URLs
+}
+FFMPEG_OPTS = {
+    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+    "options": "-vn",
+}
+
+
+@dataclass
+class Track:
+    title: str
+    stream_url: str
+    page_url: str
+
+
+def _extract(query: str) -> Track:
+    import yt_dlp  # imported lazily so the bot runs even if music isn't used
+
+    with yt_dlp.YoutubeDL(YDL_OPTS) as ydl:
+        info = ydl.extract_info(query, download=False)
+    if "entries" in info:  # search result
+        info = info["entries"][0]
+    return Track(info.get("title", query), info["url"], info.get("webpage_url", query))
 
 
 class Music(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
+        self.queues: Dict[int, Deque[Track]] = {}
 
-    # Music commands - play music from url
-    @commands.command(pass_context=True)
-    async def play(self, ctx, url: str):
-        song_there = os.path.isfile("song.mp3")
-        try:
-            if song_there:
-                os.remove("song.mp3")
-        except PermissionError:
-            await ctx.send("Wait for the current playing music to end or use the 'stop' command")
+    def _queue(self, guild_id: int) -> Deque[Track]:
+        return self.queues.setdefault(guild_id, deque())
+
+    def _play_next(self, guild: discord.Guild, text_channel):
+        vc = guild.voice_client
+        queue = self._queue(guild.id)
+        if vc is None or not vc.is_connected() or not queue:
             return
+        track = queue.popleft()
 
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+        def after(err):
+            if err:
+                log.warning("Playback error: %s", err)
+            self.bot.loop.call_soon_threadsafe(self._play_next, guild, text_channel)
 
-        for file in os.listdir("./"):
-            if file.endswith(".mp3"):
-                os.rename(file, "song.mp3")
+        vc.play(discord.FFmpegPCMAudio(track.stream_url, **FFMPEG_OPTS), after=after)
+        asyncio.run_coroutine_threadsafe(text_channel.send(f"▶️ Nyt soi: **{track.title}**"), self.bot.loop)
 
-        voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='General')
-        await voiceChannel.connect()
-        voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
-        voice.play(discord.FFmpegPCMAudio("./song.mp3"))
+    @commands.command(help="Soita URL tai hakusana. Liittyy omalle äänikanavallesi.")
+    @commands.guild_only()
+    async def play(self, ctx, *, query: str):
+        if ctx.author.voice is None or ctx.author.voice.channel is None:
+            await ctx.send("Liity ensin äänikanavalle.")
+            return
+        channel = ctx.author.voice.channel
+        vc = ctx.voice_client
+        if vc is None:
+            vc = await channel.connect()
+        elif vc.channel != channel:
+            await vc.move_to(channel)
 
-    # Music commands - disconnect bot from channel.
-    @commands.command(pass_context=True)
-    async def leave(self, ctx):
-        voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
-        if voice.is_connected():
-            await voice.disconnect()
+        async with ctx.typing():
+            try:
+                track = await asyncio.to_thread(_extract, query)
+            except Exception as e:
+                await ctx.send(f"En löytänyt/voinut soittaa: {e}")
+                return
+
+        self._queue(ctx.guild.id).append(track)
+        if vc.is_playing() or vc.is_paused():
+            await ctx.send(f"Jonossa: **{track.title}**")
         else:
-            await ctx.send("The bot is not connected to a voice channel.")
+            self._play_next(ctx.guild, ctx.channel)
 
-    # Music commands - pause the music bot is currently playing.
-    @commands.command(pass_context=True)
+    @commands.command(help="Ohita nykyinen kappale.")
+    async def skip(self, ctx):
+        vc = ctx.voice_client
+        if vc and (vc.is_playing() or vc.is_paused()):
+            vc.stop()  # `after` callback starts the next track
+        else:
+            await ctx.send("Mikään ei soi.")
+
+    @commands.command(help="Näytä jono.")
+    async def queue(self, ctx):
+        q = self._queue(ctx.guild.id) if ctx.guild else []
+        if not q:
+            await ctx.send("Jono on tyhjä.")
+            return
+        await ctx.send("\n".join(f"{i}. {t.title}" for i, t in enumerate(list(q)[:10], start=1)))
+
+    @commands.command(help="Tauko.")
     async def pause(self, ctx):
-        voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
-        if voice.is_playing():
-            voice.pause()
+        vc = ctx.voice_client
+        if vc and vc.is_playing():
+            vc.pause()
         else:
             await ctx.send("Currently no audio is playing.")
 
-    # Music commands - resume the music bot was playing.
-    @commands.command(pass_context=True)
+    @commands.command(help="Jatka.")
     async def resume(self, ctx):
-        voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
-        if voice.is_paused():
-            voice.resume()
+        vc = ctx.voice_client
+        if vc and vc.is_paused():
+            vc.resume()
         else:
             await ctx.send("The audio is not paused.")
 
-    # Music commands - stop playing current song.
-    @commands.command(pass_context=True)
+    @commands.command(help="Pysäytä ja tyhjennä jono.")
     async def stop(self, ctx):
-        voice = discord.utils.get(self.client.voice_clients, guild=ctx.guild)
-        voice.stop()
+        if ctx.guild:
+            self._queue(ctx.guild.id).clear()
+        if ctx.voice_client:
+            ctx.voice_client.stop()
+
+    @commands.command(help="Botti poistuu äänikanavalta.")
+    async def leave(self, ctx):
+        if ctx.voice_client and ctx.voice_client.is_connected():
+            self._queue(ctx.guild.id).clear()
+            await ctx.voice_client.disconnect()
+        else:
+            await ctx.send("The bot is not connected to a voice channel.")
 
 
-# Setup cog for main.py.
-def setup(client):
-    client.add_cog(Music(client))
+async def setup(bot):
+    await bot.add_cog(Music(bot))

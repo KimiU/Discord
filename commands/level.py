@@ -1,63 +1,77 @@
-from discord.ext import commands
+from typing import Optional
+
 import discord
+from discord.ext import commands
 
 from manager import unitils
-from manager.user import User
+from manager.progression import progress_for
 
-
-async def async_sort_users(users):
-    return sorted(users, key=lambda x: x.getTime(), reverse=True)
 
 class Level(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
 
-    # Leveling command.
-    @commands.command(pass_context=True)
-    async def level(self, ctx):
+    @commands.command(help="Näytä oma (tai toisen) taso ja aika äänikanavilla.")
+    async def level(self, ctx, member: Optional[discord.Member] = None):
+        member = member or ctx.author
+        self.bot.tracker.checkpoint()  # flush in-progress time so numbers are up to date
+        rec = self.bot.store.get(member.id, member.name)
+        p = progress_for(rec.active_ms)
+        rank = self.bot.store.rank_of(member.id)
 
-        user = User(ctx.message.author)
+        embed = discord.Embed(title="Progression", description=member.display_name, color=0x00ff00)
+        embed.add_field(name=f"Level {p.level}", value=f"{p.xp}/{p.xp_needed} XP", inline=False)
+        embed.add_field(name="Total time", value=unitils.formatDuration(rec.active_ms), inline=True)
+        embed.add_field(name="AFK (not counted)", value=unitils.formatDuration(rec.afk_ms), inline=True)
+        if rank:
+            embed.add_field(name="Rank", value=f"#{rank}", inline=True)
 
-        lvl = user.getLevel()
-        xp = user.getXP()
-        max = user.getMaxXP()
-
-        embed = discord.Embed(title=f"Progression", description=f"{ctx.message.author.display_name}", color=0x00ff00)
-        
-        embed.add_field(name=f"Level {lvl}", value=f"{xp}/{max} XP", inline=False)
-        embed.add_field(name="Total time", value=f"{unitils.convertSeconds(user.getTime())}", inline=False)
-        
-        if user.getCurrentMillis() != 0:
-            time = user.getCurrentCallTimeFormatted()
-            embed.add_field(name="Current call duration", value=f"{time}", inline=False)
-        
-        await ctx.send(embed=embed)
-        await ctx.message.delete()
-
-
-    @commands.command()
-    async def leaderboard(self, ctx):
-        users = await User.get_all_users(self.client)
-        sorted_users = await async_sort_users(users)
-        #sorted_users = sorted(users, key=lambda x: x.getTime(), reverse=True)
-
-
-        leaderboard_embed = discord.Embed(
-            title="Leaderboard",
-            description="Top users by total time spent in voice channels",
-            color=0x00ff00,
-        )
-
-        for index, user in enumerate(sorted_users[:10], start=1):
-            leaderboard_embed.add_field(
-                name=f"{index}. {user.username}#{user.tag}",
-                value=f"Level: {user.getLevel()} | Time: {user.getTimeFormatted()}",
+        session = self.bot.tracker.current((ctx.guild.id, member.id)) if ctx.guild else None
+        if session is not None:
+            state = "active" if session.segment_active else "AFK – not counting"
+            embed.add_field(
+                name="Current call",
+                value=f"{unitils.formatDuration(session.active_ms)} active, "
+                      f"{unitils.formatDuration(session.afk_ms)} AFK ({state})",
                 inline=False,
             )
+        await ctx.send(embed=embed)
 
-        await ctx.send(embed=leaderboard_embed)
-        await ctx.message.delete()
+    @commands.command(help="TOP 10 aktiivisinta äänikanavilla.")
+    async def leaderboard(self, ctx):
+        self.bot.tracker.checkpoint()
+        embed = discord.Embed(
+            title="Leaderboard",
+            description="Top users by active time in voice channels (AFK excluded)",
+            color=0x00ff00,
+        )
+        for i, rec in enumerate(self.bot.store.top(10), start=1):
+            member = ctx.guild.get_member(rec.id) if ctx.guild else None
+            name = member.display_name if member else (rec.username or str(rec.id))
+            p = progress_for(rec.active_ms)
+            embed.add_field(
+                name=f"{i}. {name}",
+                value=f"Level: {p.level} | Time: {unitils.formatDuration(rec.active_ms)}",
+                inline=False,
+            )
+        await ctx.send(embed=embed)
 
-# Setup cog for main.py.
-def setup(client):
-    client.add_cog(Level(client))
+    @commands.command(help="(Admin) Aseta käyttäjän aktiivinen aika tunteina. Esim: !settime @nimi 120")
+    @commands.has_permissions(administrator=True)
+    async def settime(self, ctx, member: discord.Member, hours: float):
+        if hours < 0:
+            await ctx.send("Hours must be >= 0.")
+            return
+        self.bot.tracker.checkpoint()
+        rec = self.bot.store.get(member.id, member.name)
+        old = rec.active_ms
+        rec.active_ms = int(hours * 3_600_000)
+        self.bot.store.save(rec)
+        await ctx.send(
+            f"{member.display_name}: {unitils.formatDuration(old)} → {unitils.formatDuration(rec.active_ms)} "
+            f"(level {progress_for(rec.active_ms).level})"
+        )
+
+
+async def setup(bot):
+    await bot.add_cog(Level(bot))

@@ -1,60 +1,74 @@
+import logging
+
+import discord
 from discord.ext import commands
-from manager import unitils, bot
+
+from manager.config import Config, load_config
+from manager.storage import UserStore
+from manager.tracking import SessionTracker
+
+EXTENSIONS = (
+    "commands.basic",
+    "commands.level",
+    "commands.music",
+    "commands.redirect",
+    "events.tracker",
+)
+
+log = logging.getLogger("nlabot")
 
 
-dev = False
-if dev:
-    token = "*"
-else:
-    token = "*"
+class NlaBot(commands.Bot):
+    def __init__(self, config: Config):
+        intents = discord.Intents.default()
+        intents.members = True          # privileged: enable "Server Members Intent" in the dev portal
+        intents.message_content = True  # privileged: enable "Message Content Intent" in the dev portal
+        intents.voice_states = True
+        super().__init__(command_prefix=config.prefix, intents=intents)
+
+        self.config = config
+        self.store = UserStore(config.data_dir)
+        self.tracker = SessionTracker(config.rules, self._credit)
+
+    def _credit(self, user_id: int, active_ms: int, afk_ms: int) -> None:
+        rec = self.store.get(user_id)
+        rec.active_ms += active_ms
+        rec.afk_ms += afk_ms
+        self.store.save(rec)
+
+    async def setup_hook(self):
+        for ext in EXTENSIONS:
+            await self.load_extension(ext)
+
+    async def on_ready(self):
+        for guild in self.guilds:
+            log.info("Server - %s (name: %s)", guild.id, guild.name)
+        log.info("%s is in %d guild(s).", self.user, len(self.guilds))
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            return
+        if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
+            await ctx.send("Ei oikeuksia tähän komentoon.")
+        elif isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
+            await ctx.send(f"Väärät parametrit. Käyttö: `{ctx.prefix}{ctx.command.qualified_name} {ctx.command.signature}`")
+        elif isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("Tämä komento toimii vain palvelimella.")
+        else:
+            log.error("Command %s failed", ctx.command, exc_info=error)
+            await ctx.send("Jokin meni pieleen.")
+
+    async def close(self):
+        # Credit everyone's in-progress time before shutting down.
+        self.tracker.end_all()
+        await super().close()
 
 
-client = commands.Bot(command_prefix='!')
-
-client.load_extension("commands.basic")
-client.load_extension("commands.level")
-client.load_extension("commands.music")
-client.load_extension("commands.tracker")
-client.load_extension("events.tracker")
+def main():
+    config = load_config()
+    bot = NlaBot(config)
+    bot.run(config.token, log_level=logging.INFO, root_logger=True)
 
 
-@client.event
-async def on_ready():
-    guild_count = 0
-
-    for guild in client.guilds:
-        print(f"Server - {guild.id} (name: {guild.name})")
-        guild_count = guild_count + 1
-
-    if dev:
-        print("DevNLABot is in " + str(guild_count) + " guilds.")
-    else:
-        print("NlaBot is in " + str(guild_count) + " guilds.")
-
-
-
-@client.event
-async def on_message(message):
-    await client.process_commands(message)
-
-    sender_id = message.author.id
-    sender_name = message.author.name
-    msg = message.content.lower()
-    channel = message.channel
-
-    # Checking if message is nettix url, if so then direct to nettimauto.
-    if str(channel).lower() != "nettimauto":
-        if unitils.isNettiauto(msg):
-            await message.delete()
-            channel = client.get_channel(788403517231595571)
-            await bot.sendMsg(message, channel, msg)
-
-    # Checking if message is code, if so then direct to nörttiluola.
-    if str(channel).lower() != "nörttiluola":
-        if unitils.isCode(msg):
-            await message.delete()
-            channel = client.get_channel(755053446763380767)
-            await bot.sendMsg(message, channel, msg)
-
-client.run(token)
-
+if __name__ == "__main__":
+    main()

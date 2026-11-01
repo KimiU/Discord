@@ -1,90 +1,44 @@
-import math
-
 ###############################
 # unitils.py - perus työkalut #
 ###############################
+
+CODE_KEYWORDS = ("string ", "int ", "double ", "float ", "system.out")
+CODE_SITES = ("stack", "overflow", "w3schools", "jetbrains", "code", "java", "c#", "c++",
+              "python", "javascript", "programming")
+NETTIX_SITES = ("nettiauto", "nettimarkkina", "nettimoto", "nettivene", "nettikone",
+                "nettivaraosa", "nettivuokraus", "nettimokki", "nettikaravaani")
+
+
+def _links(msg):
+    return [w for w in msg.lower().split() if w.startswith(("http://", "https://"))]
+
 
 # Tarkistaa sisältääkö viestissä koodia.
 def isCode(msg):
     msg = msg.lower()
     if "```" in msg:
         return True
-
-    keys = ["string ", "int ", "double ", "float ", "System.out"]
-    for i in keys:
-        if i in msg:
-            return True
-
-    for m in msg.split(' '):
-        if "https" in m or "http" in m:
-            if "stack" in m or \
-                    "overflow" in m or \
-                    "w3schools" in m or \
-                    "jetbrains" in m or \
-                    "code" in m or \
-                    "java" in m or \
-                    "c#" in m or \
-                    "c++" in m or \
-                    "python" in m or \
-                    "javascript" in m or \
-                    "programming" in m:
-                return True
-    return False
+    if any(k in msg for k in CODE_KEYWORDS):
+        return True
+    return any(site in link for link in _links(msg) for site in CODE_SITES)
 
 
 # Tarkistaa sisältääkö viestissä Nettix OY linkkejä.
 def isNettiauto(msg):
-    msg = msg.lower()
-    for m in msg.split(' '):
-        if "https" in m or "http" in m:
-            if "nettiauto" in m or \
-                    "nettimarkkina" in m or \
-                    "nettimoto" in m or \
-                    "nettivene" in m or \
-                    "nettikone" in m or \
-                    "nettivaraosa" in m or \
-                    "nettivuokraus" in m or \
-                    "nettimokki" in m or \
-                    "nettikaravaani" in m:
-                return True
-    return False
+    return any(site in link for link in _links(msg) for site in NETTIX_SITES)
 
 
-# Turns seconds to hours and minutes
-def convertSeconds_old(seconds):
-    # hours = math.trunc(seconds / 60 / 60)
-    seconds = seconds % (24 * 3600)
-    hour = seconds // 3600
-    seconds %= 3600
-    minutes = seconds // 60
-    seconds %= 60
-    if hour > 0:
-        return f"{hour}h {minutes}m"
-    else:
-        if minutes > 0:
-            return f"{minutes}m {seconds}s"
-        else:
-            return f"{seconds} seconds"
+def formatDuration(ms):
+    """Milliseconds -> '12h 5m' / '5m 3s' / '42s'."""
+    seconds = int(ms) // 1000
+    hours, rem = divmod(seconds, 3600)
+    minutes, secs = divmod(rem, 60)
+    if hours:
+        return f"{hours}h {minutes}m"
+    if minutes:
+        return f"{minutes}m {secs}s"
+    return f"{secs}s"
 
-def convertSeconds(timeInMilliSeconds):
-    seconds = timeInMilliSeconds / 1000
-    minutes = seconds / 60
-    hours = minutes / 60
-    days = hours / 24
-    if days >= 1:
-        # return str(int(days)) + "days " + str(int(hours % 24)) + " hours " + str(int(minutes % 60)) + " minutes " + str(int(seconds % 60)) + " seconds"
-        return str(int(hours)) + "h " + str(int(minutes % 60)) + "m"
-    else:
-        if hours >= 1:
-            return str(int(hours)) + "h " + str(int(minutes % 60)) + "m"
-        else:
-            if minutes >= 1:
-                return str(int(minutes)) + "m " + str(int(seconds % 60)) + "s"
-            else:
-                return str(int(seconds)) + "s"
 
-# Debug tarkoitukseen
-def dump(obj):
-    for attr in dir(obj):
-        if hasattr(obj, attr):
-            print("obj.%s = %s" % (attr, getattr(obj, attr)))
+# Backwards-compatible name (the old function also took milliseconds despite its name).
+convertSeconds = formatDuration
