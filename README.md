@@ -33,6 +33,45 @@ and a restart no longer creates phantom time.
    ```
 Tests: `pip install -r requirements-dev.txt && pytest`
 
+## Running 24/7 on a Windows server
+A scheduled task starts `scripts\windows\run-bot.ps1` at boot (no login needed). That script
+restarts the bot whenever it exits or crashes, with back-off if it keeps failing.
+
+One-time setup (PowerShell **as Administrator**):
+```powershell
+winget install -e --id Python.Python.3.12 --scope machine
+winget install -e --id Git.Git
+winget install -e --id Gyan.FFmpeg
+cd C:\
+git clone https://github.com/KimiU/Discord.git nlabot
+cd C:\nlabot
+py -3.12 -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+copy .env.example .env
+notepad .env
+```
+In `.env`, set `DISCORD_TOKEN`. FFmpeg from winget is only on *your* PATH, not the SYSTEM
+account's, so set `FFMPEG_PATH` to the full path (`where.exe ffmpeg` prints it).
+Test it in the foreground first: `.venv\Scripts\python main.py` (Ctrl+C to stop). Then:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\install-task.ps1
+```
+
+| Task | Command (Administrator PowerShell, in `C:\nlabot`) |
+|---|---|
+| Watch the log | `Get-Content logs\bot.log -Wait -Tail 50` |
+| Is it running? | `Get-ScheduledTask NlaBot` |
+| Update to new code | `git pull` then `.venv\Scripts\pip install -r requirements.txt` then the restart command below |
+| Restart after editing `.env` | `powershell -ExecutionPolicy Bypass -File scripts\windows\restart-bot.ps1` |
+| Remove | `powershell -ExecutionPolicy Bypass -File scripts\windows\uninstall-task.ps1` |
+
+Notes:
+- **Back up `data\users`.** It is the only copy of everyone's time.
+- Restarts are hard kills, so up to `CHECKPOINT_SECONDS` (5 min) of in-progress calls can be lost.
+- The task runs as SYSTEM for simplicity. For least privilege, change the task's user in Task
+  Scheduler to a dedicated local account with write access to `C:\nlabot`.
+- Disable sleep on the server (`powercfg /change standby-timeout-ac 0`).
+
 ## Commands (prefix `!`)
 | Command | What it does |
 |---|---|

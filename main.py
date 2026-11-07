@@ -1,4 +1,5 @@
 import logging
+import os
 
 import discord
 from discord.ext import commands
@@ -71,6 +72,9 @@ class NlaBot(commands.Bot):
 
 def main():
     config = load_config()
+    # Lets the Windows scripts stop/restart exactly this process.
+    with open("bot.pid", "w") as f:
+        f.write(str(os.getpid()))
     bot = NlaBot(config)
     bot.run(config.token, log_level=logging.INFO, root_logger=True)
 

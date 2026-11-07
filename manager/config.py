@@ -50,6 +50,8 @@ class Config:
     nettiauto_channel_id: Optional[int] = None
     code_channel_id: Optional[int] = None
     invite_url: str = "https://discord.gg/nlahoodz"
+    # Full path to ffmpeg(.exe) if it isn't on the PATH of the account running the bot.
+    ffmpeg_path: str = "ffmpeg"
 
 
 def load_config() -> Config:
@@ -75,4 +77,5 @@ def load_config() -> Config:
         nettiauto_channel_id=_int("NETTIAUTO_CHANNEL_ID"),
         code_channel_id=_int("CODE_CHANNEL_ID"),
         invite_url=os.getenv("INVITE_URL", "https://discord.gg/nlahoodz"),
+        ffmpeg_path=os.getenv("FFMPEG_PATH", "").strip() or "ffmpeg",
     )

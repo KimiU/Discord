@@ -62,7 +62,8 @@ class Music(commands.Cog):
                 log.warning("Playback error: %s", err)
             self.bot.loop.call_soon_threadsafe(self._play_next, guild, text_channel)
 
-        vc.play(discord.FFmpegPCMAudio(track.stream_url, **FFMPEG_OPTS), after=after)
+        vc.play(discord.FFmpegPCMAudio(
+            track.stream_url, executable=self.bot.config.ffmpeg_path, **FFMPEG_OPTS), after=after)
         asyncio.run_coroutine_threadsafe(text_channel.send(f"▶️ Nyt soi: **{track.title}**"), self.bot.loop)
 
     @commands.command(help="Soita URL tai hakusana. Liittyy omalle äänikanavallesi.")
