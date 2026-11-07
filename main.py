@@ -86,7 +86,15 @@ def main():
     with open("bot.pid", "w") as f:
         f.write(str(os.getpid()))
     bot = NlaBot(config)
-    bot.run(config.token, log_level=logging.INFO, root_logger=True)
+    try:
+        bot.run(config.token, log_level=logging.INFO, root_logger=True)
+    except discord.LoginFailure:
+        raise SystemExit(
+            "Discord rejected the bot token (401). Likely causes: the token was reset after you copied "
+            "it (each reset invalidates the previous one), or it belongs to a different application. "
+            "Developer Portal -> your app -> Bot -> Reset Token, paste the new value into .env as "
+            "DISCORD_TOKEN=..., and start the bot again."
+        )
 
 
 if __name__ == "__main__":

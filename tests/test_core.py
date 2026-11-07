@@ -161,3 +161,13 @@ def test_format_and_detectors():
     assert not unitils.isNettiauto("nettiauto ilman linkkiä")
     assert unitils.isCode("```print(1)```")
     assert unitils.isCode("https://stackoverflow.com/q/1")
+
+
+def test_token_cleanup_and_shape_check():
+    from manager.config import clean_token, token_problem
+    fake = "MTAxMjM0NTY3ODkw.GaBcDe.abcdefghijklmnopqrstuvwxyz0123456789AB"
+    assert clean_token(f'  "Bot {fake}"\n') == fake
+    assert token_problem(fake) is None
+    assert "Application ID" in token_problem("1092804247822815242")
+    assert "Client Secret" in token_problem("aB3dEfGhIjKlMnOpQrStUvWxYz012345")
+    assert fake not in (token_problem(fake + ".x") or "")

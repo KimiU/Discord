@@ -54,11 +54,36 @@ class Config:
     ffmpeg_path: str = "ffmpeg"
 
 
+def clean_token(raw: str) -> str:
+    """Forgive common paste mistakes: surrounding quotes/whitespace and a 'Bot ' prefix."""
+    token = raw.strip().strip('"\'').strip()
+    if token.lower().startswith("bot "):
+        token = token[4:].strip()
+    return token
+
+
+def token_problem(token: str) -> Optional[str]:
+    """Cheap shape check. Never include the token itself in the message (it ends up in logs)."""
+    if token.isdigit():
+        return ("it is only digits, so it's probably the Application ID. Use Developer Portal -> "
+                "your app -> Bot -> Reset Token.")
+    if token.count(".") != 2:
+        return (f"a bot token has 3 parts separated by dots, this has {token.count('.') + 1}. "
+                "You may have copied the OAuth2 Client Secret or Public Key instead of the Bot token "
+                "(Developer Portal -> your app -> Bot -> Reset Token).")
+    if any(c.isspace() for c in token):
+        return "it contains spaces or line breaks; paste it again on a single line."
+    return None
+
+
 def load_config() -> Config:
     load_dotenv()
-    token = os.getenv("DISCORD_TOKEN", "").strip()
+    token = clean_token(os.getenv("DISCORD_TOKEN", ""))
     if not token:
         raise SystemExit("DISCORD_TOKEN is not set. Copy .env.example to .env and add your bot token.")
+    problem = token_problem(token)
+    if problem:
+        raise SystemExit(f"DISCORD_TOKEN looks wrong: {problem}")
 
     return Config(
         token=token,
