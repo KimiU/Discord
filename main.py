@@ -1,8 +1,18 @@
 import logging
 import os
 
-import discord
-from discord.ext import commands
+# Verify TLS certificates with the operating system's trust store (Windows certificate store,
+# macOS keychain). Plain Python only trusts roots already present in the store, which fails on
+# fresh Windows servers with CERTIFICATE_VERIFY_FAILED. Must run before discord/aiohttp import,
+# because aiohttp builds its SSL contexts at import time.
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
+import discord  # noqa: E402
+from discord.ext import commands  # noqa: E402
 
 from manager.config import Config, load_config
 from manager.storage import UserStore

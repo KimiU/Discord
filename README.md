@@ -91,3 +91,11 @@ code snippets to their own channels (`NETTIAUTO_CHANNEL_ID`, `CODE_CHANNEL_ID`).
 `data/users/<id>.json`. Old (v1) files are migrated on load: their stored total becomes active
 time. All totals were reset to zero on 2026-11-07 because the old ones included AFK time;
 the pre-reset numbers are still in git history (commit `4cc5b63`) if you ever need them.
+
+## Troubleshooting
+**`CERTIFICATE_VERIFY_FAILED ... unable to get local issuer certificate`** (common on fresh
+Windows servers): the bot uses `truststore` so Python checks certificates through Windows itself.
+Make sure it's installed (`.venv\Scripts\pip install -r requirements.txt`). If it still fails,
+something on the server is intercepting HTTPS (antivirus "HTTPS scanning" or a company proxy);
+check with `.venv\Scripts\python -c "import ssl,socket; s=ssl.create_default_context().wrap_socket(socket.create_connection(('discord.com',443)),server_hostname='discord.com'); print(s.getpeercert()['issuer'])"`.
+Never "fix" this by disabling certificate verification.
