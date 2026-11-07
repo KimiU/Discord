@@ -126,6 +126,33 @@ def test_storage_migrates_legacy_and_roundtrips(tmp_path):
     assert json.loads((tmp_path / "1.json").read_text())["version"] == 2
 
 
+def test_reset_all_zeroes_everyone_and_live_calls_restart_from_reset(tmp_path):
+    store = UserStore(str(tmp_path))
+    for uid in (1, 2):
+        rec = store.get(uid)
+        rec.active_ms, rec.afk_ms = 999 * MIN, 5 * MIN
+        store.save(rec)
+
+    def credit(uid, a, f):
+        rec = store.get(uid)
+        rec.active_ms += a
+        rec.afk_ms += f
+        store.save(rec)
+
+    clock = Clock()
+    t = SessionTracker(TrackingRules(), credit, clock)
+    t.update("k", 1, ACTIVE)
+    clock.advance(30)              # 30 min before the reset must not survive it
+    t.checkpoint()
+    assert store.reset_all() == 2
+    clock.advance(10)
+    t.update("k", 1, None)
+    reloaded = UserStore(str(tmp_path))
+    assert reloaded.get(1).active_ms == 10 * MIN
+    assert (reloaded.get(2).active_ms, reloaded.get(2).afk_ms) == (0, 0)
+    assert progress_for(reloaded.get(2).active_ms).level == 1
+
+
 def test_format_and_detectors():
     assert unitils.formatDuration(42_000) == "42s"
     assert unitils.formatDuration(5 * MIN + 3000) == "5m 3s"

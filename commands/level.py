@@ -73,5 +73,15 @@ class Level(commands.Cog):
         )
 
 
+    @commands.command(help="(Admin) Nollaa KAIKKIEN ajat ja tasot. Käyttö: !resetall vahvista")
+    @commands.has_permissions(administrator=True)
+    async def resetall(self, ctx, confirm: str = ""):
+        if confirm.lower() != "vahvista":
+            await ctx.send(f"Tämä nollaa kaikkien ajat ja tasot. Vahvista: `{ctx.prefix}resetall vahvista`")
+            return
+        count = self.bot.reset_all_time()
+        await ctx.send(f"Kaikkien ({count}) ajat nollattu. Käynnissä olevat puhelut jatkavat laskemista nollasta.")
+
+
 async def setup(bot):
     await bot.add_cog(Level(bot))

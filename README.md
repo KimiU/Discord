@@ -40,6 +40,7 @@ Tests: `pip install -r requirements-dev.txt && pytest`
 | `!leaderboard` | Top 10 by active time |
 | `!settime @user <hours>` | (Admin) Correct someone's active time; level follows automatically |
 | `!play <url or search>`, `!skip`, `!queue`, `!pause`, `!resume`, `!stop`, `!leave` | Music |
+| `!resetall vahvista` | (Admin) Zero everyone's time and levels; calls in progress count from the reset |
 | `!clear <n>` | (Manage Messages) Delete the last n messages (max 100) |
 | `!invite`, `!tableflip`, `!apua` | Misc |
 
@@ -49,4 +50,5 @@ code snippets to their own channels (`NETTIAUTO_CHANNEL_ID`, `CODE_CHANNEL_ID`).
 
 ## Data
 `data/users/<id>.json`. Old (v1) files are migrated on load: their stored total becomes active
-time. **Old totals include AFK time** from before this fix — use `!settime` to correct outliers.
+time. All totals were reset to zero on 2026-11-07 because the old ones included AFK time;
+the pre-reset numbers are still in git history (commit `4cc5b63`) if you ever need them.

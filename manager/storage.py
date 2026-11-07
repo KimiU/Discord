@@ -97,6 +97,14 @@ class UserStore:
                 os.remove(tmp)
             raise
 
+    def reset_all(self) -> int:
+        """Zero every user's time (level/XP follow, since they're derived from time)."""
+        for rec in self._cache.values():
+            rec.active_ms = 0
+            rec.afk_ms = 0
+            self.save(rec)
+        return len(self._cache)
+
     def all(self) -> List[UserRecord]:
         return list(self._cache.values())
 

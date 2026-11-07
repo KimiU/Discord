@@ -36,6 +36,11 @@ class NlaBot(commands.Bot):
         rec.afk_ms += afk_ms
         self.store.save(rec)
 
+    def reset_all_time(self) -> int:
+        """Zero everyone's active/AFK time. Calls in progress keep running and count from now."""
+        self.tracker.checkpoint()  # close open segments first, so pre-reset time isn't credited after
+        return self.store.reset_all()
+
     async def setup_hook(self):
         for ext in EXTENSIONS:
             await self.load_extension(ext)
