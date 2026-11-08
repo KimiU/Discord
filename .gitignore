@@ -4,5 +4,7 @@ __pycache__/
 .env
 .pytest_cache/
 data/users/*.tmp
+data/redirects.json
+data/redirects.json.tmp
 bot.pid
 logs/

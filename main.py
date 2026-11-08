@@ -66,7 +66,12 @@ class NlaBot(commands.Bot):
             return
         if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
             await ctx.send("Ei oikeuksia tähän komentoon.")
-        elif isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send(
+                f"{error}\nKäyttö: `{ctx.prefix}{ctx.command.qualified_name} {ctx.command.signature}`",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+        elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f"Väärät parametrit. Käyttö: `{ctx.prefix}{ctx.command.qualified_name} {ctx.command.signature}`")
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send("Tämä komento toimii vain palvelimella.")

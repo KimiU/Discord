@@ -1,4 +1,5 @@
 discord.py[voice]==2.7.1
-yt-dlp>=2026.10.26
+# Include YouTube challenge solver scripts and their JavaScript runtime.
+yt-dlp[default,deno]>=2026.10.26
 python-dotenv>=1.0
 truststore>=0.10

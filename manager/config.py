@@ -52,6 +52,11 @@ class Config:
     invite_url: str = "https://discord.gg/nlahoodz"
     # Full path to ffmpeg(.exe) if it isn't on the PATH of the account running the bot.
     ffmpeg_path: str = "ffmpeg"
+    redirect_enabled: bool = True
+    redirect_mode: str = "suggest"
+    redirect_cooldown_seconds: int = 300
+    redirect_rules_file: str = "./data/redirects.json"
+    redirect_rules_json: str = "[]"
 
 
 def clean_token(raw: str) -> str:
@@ -85,6 +90,16 @@ def load_config() -> Config:
     if problem:
         raise SystemExit(f"DISCORD_TOKEN looks wrong: {problem}")
 
+    redirect_mode = os.getenv("REDIRECT_MODE", "suggest").strip().lower()
+    if redirect_mode not in ("suggest", "copy", "move"):
+        raise SystemExit("REDIRECT_MODE must be suggest, copy, or move.")
+    try:
+        cooldown = _int("REDIRECT_COOLDOWN_SECONDS", 300)
+    except ValueError as exc:
+        raise SystemExit("REDIRECT_COOLDOWN_SECONDS must be an integer between 0 and 86400.") from exc
+    if not 0 <= cooldown <= 86400:
+        raise SystemExit("REDIRECT_COOLDOWN_SECONDS must be between 0 and 86400.")
+
     return Config(
         token=token,
         prefix=os.getenv("COMMAND_PREFIX", "!"),
@@ -103,4 +118,9 @@ def load_config() -> Config:
         code_channel_id=_int("CODE_CHANNEL_ID"),
         invite_url=os.getenv("INVITE_URL", "https://discord.gg/nlahoodz"),
         ffmpeg_path=os.getenv("FFMPEG_PATH", "").strip() or "ffmpeg",
+        redirect_enabled=_bool("REDIRECT_ENABLED", True),
+        redirect_mode=redirect_mode,
+        redirect_cooldown_seconds=cooldown,
+        redirect_rules_file=os.getenv("REDIRECT_RULES_FILE", "./data/redirects.json"),
+        redirect_rules_json=os.getenv("REDIRECT_RULES_JSON", "[]"),
     )

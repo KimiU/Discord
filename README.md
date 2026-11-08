@@ -22,7 +22,7 @@ and a restart no longer creates phantom time.
 ## Running
 1. Create a bot at https://discord.com/developers/applications. Under **Bot**, enable
    **Server Members Intent** and **Message Content Intent**.
-2. Install Python 3.10+ and FFmpeg (for music).
+2. Install Python 3.11+ and FFmpeg (for music). Python 3.12 or newer is recommended.
 3. Set up and run:
    ```bash
    python -m venv .venv
@@ -32,6 +32,10 @@ and a restart no longer creates phantom time.
    python main.py
    ```
 Tests: `pip install -r requirements-dev.txt && pytest`
+
+The pinned Discord library includes today's encrypted voice support (DAVE). Music dependencies
+include YouTube's JavaScript solver scripts and a local Deno runtime, also available to the
+Windows service account without changing its PATH. FFmpeg is still installed separately.
 
 ## Running 24/7 on a Windows server
 A scheduled task starts `scripts\windows\run-bot.ps1` at boot (no login needed). That script
@@ -81,11 +85,23 @@ Notes:
 | `!play <url or search>`, `!skip`, `!queue`, `!pause`, `!resume`, `!stop`, `!leave` | Music |
 | `!resetall vahvista` | (Admin) Zero everyone's time and levels; calls in progress count from the reset |
 | `!clear <n>` | (Manage Messages) Delete the last n messages (max 100) |
+| `!redirect`, `!redirect add`, `!redirect remove`, `!redirect mode` | (Manage Server) Configure redirect rules; [full guide](docs/redirects.md) |
 | `!invite`, `!tableflip`, `!apua` | Misc |
 
 Automatic features: progression post in `#progression` after each call (with level-up notice),
-"crowded channel" announcement in `#generalpopulation` (with cooldown), and moving Nettix links /
-code snippets to their own channels (`NETTIAUTO_CHANNEL_ID`, `CODE_CHANNEL_ID`).
+"crowded channel" announcement in `#generalpopulation` (with cooldown), and configurable channel
+suggestions for Nettix links / code snippets (`NETTIAUTO_CHANNEL_ID`, `CODE_CHANNEL_ID`).
+Redirects default to `suggest`, which leaves the message and its discussion in place. Optional
+`copy` and `move` modes and custom domain/keyword rules can be configured in `.env` or directly
+in chat. Chat changes are saved per server in `data/redirects.json`; back up this file too.
+See the [redirect guide](docs/redirects.md) for examples, permissions, and configuration precedence.
+
+## Proposed community activities
+
+The [community feature specifications](docs/community-features.md) describe weekly trivia,
+meme/caption competitions, monthly activity standings, theme polls, and opt-in reminders.
+These are proposals for a future release. They use separate activity points and preserve the
+existing voice-scoring configuration and lifetime totals.
 
 ## Data
 `data/users/<id>.json`. Old (v1) files are migrated on load: their stored total becomes active
