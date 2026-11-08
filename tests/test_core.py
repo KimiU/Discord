@@ -153,14 +153,39 @@ def test_reset_all_zeroes_everyone_and_live_calls_restart_from_reset(tmp_path):
     assert progress_for(reloaded.get(2).active_ms).level == 1
 
 
-def test_format_and_detectors():
+def test_format_duration():
     assert unitils.formatDuration(42_000) == "42s"
     assert unitils.formatDuration(5 * MIN + 3000) == "5m 3s"
     assert unitils.formatDuration(50 * 60 * MIN) == "50h 0m"  # old _old variant wrapped at 24h
-    assert unitils.isNettiauto("katso https://www.nettiauto.com/x")
-    assert not unitils.isNettiauto("nettiauto ilman linkkiä")
-    assert unitils.isCode("```print(1)```")
-    assert unitils.isCode("https://stackoverflow.com/q/1")
+
+
+CODE = [
+    "```py\nprint(1)\n```", "int x = 5;", "for (int i = 0; i < 10; i++) {",
+    'System.out.println("hei");', "console.log(x)", "def foo(bar):",
+    "public static void main(String[] args) {", "#include <stdio.h>", "x = 1;\ny = 2;",
+    'String name = "Kimi";', 'miks tää ei toimi: print("moi")', "double[] arr = new double[5];",
+    "https://stackoverflow.com/questions/1", "https://www.reddit.com/r/learnpython/x",
+    "https://leetcode.com/problems/two-sum/",
+]
+# Real chat that the old substring check ("int ", "double ", ...) flagged as code. The bot replies
+# publicly to matches, so each of these would have been a friend getting told off by the bot.
+CHAT = [
+    "good point tho", "double kill!!", "double xp weekend", "print it out pls",
+    "next sprint starts monday", "joint effort", "float like a butterfly", "paint the wall",
+    "double kill (lol)", "let me, I will do it", "long story short", "||spoiler||",
+    "if (you) come ill buy pizza", "string theory is wild", "the void stares back", "def not:)",
+    "redeem this https://www.xbox.com/redeem-code", "https://example.com/login?code=ABC123",
+    "https://blog.example.com/post-abc#comments", "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "kuka tulee pelaa?",
+]
+
+
+def test_code_detector_catches_code():
+    assert [m for m in CODE if not unitils.isCode(m)] == []
+
+
+def test_code_detector_ignores_normal_chat():
+    assert [m for m in CHAT if unitils.isCode(m)] == []
 
 
 def test_token_cleanup_and_shape_check():

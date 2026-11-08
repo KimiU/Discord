@@ -176,11 +176,13 @@ class Redirect(commands.Cog):
                  f"cooldown {settings.cooldown_seconds}s"]
         for rule in settings.rules:
             target = self.bot.get_channel(rule.target_channel_id)
-            if target is None or target.guild.id != ctx.guild.id:
-                continue
+            if target is not None and target.guild.id != ctx.guild.id:
+                continue  # another server's channel
+            # A deleted/unknown channel stays visible, otherwise the broken rule can't be found and fixed.
+            destination = target.mention if target else f"⚠️ kanavaa {rule.target_channel_id} ei löydy"
             pattern = discord.utils.escape_markdown(rule.pattern)
             source = f"<#{rule.source_channel_id}>" if rule.source_channel_id else "all"
-            lines.append(f"`{rule.name}`: {rule.match_type} {pattern} → {target.mention} | "
+            lines.append(f"`{rule.name}`: {rule.match_type} {pattern} → {destination} | "
                          f"{rule.mode or settings.mode} | {'on' if rule.enabled else 'off'} | source: {source}")
         lines.append(f"Ohje: `{ctx.prefix}help redirect`")
         page = ""

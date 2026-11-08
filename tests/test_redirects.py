@@ -494,3 +494,12 @@ def test_invalid_environment_settings_have_named_errors(environment, monkeypatch
     monkeypatch.setenv(key, value)
     with pytest.raises(SystemExit, match=key):
         environment.load_config()
+
+
+def test_list_shows_rules_whose_channel_is_missing(app):
+    app.cog.store.put_rule(1, RedirectRule("gone", 999, "keyword", "x"))
+    ctx = SimpleNamespace(guild=app.guild, prefix="!", send=AsyncMock())
+    run(app.cog._list(ctx))
+    text = "".join(call.args[0] for call in ctx.send.await_args_list)
+    assert "`gone`" in text and "999 ei löydy" in text
+    assert "`nettix`" in text and "<#20>" in text

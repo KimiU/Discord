@@ -25,6 +25,9 @@ EXTENSIONS = (
     "commands.redirect",
     "events.tracker",
 )
+# Voice tracking and levels are the core. If anything else fails to load (e.g. a broken
+# redirect config), log it and keep running instead of taking the whole bot offline.
+CORE_EXTENSIONS = {"events.tracker", "commands.level"}
 
 log = logging.getLogger("nlabot")
 
@@ -35,7 +38,13 @@ class NlaBot(commands.Bot):
         intents.members = True          # privileged: enable "Server Members Intent" in the dev portal
         intents.message_content = True  # privileged: enable "Message Content Intent" in the dev portal
         intents.voice_states = True
-        super().__init__(command_prefix=config.prefix, intents=intents)
+        super().__init__(
+            command_prefix=config.prefix,
+            intents=intents,
+            # Never let text from users or YouTube (names, titles, errors) ping @everyone/@here or roles.
+            # A feature that really needs a role ping must opt in on that one message.
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True, replied_user=True),
+        )
 
         self.config = config
         self.store = UserStore(config.data_dir)
@@ -53,8 +62,16 @@ class NlaBot(commands.Bot):
         return self.store.reset_all()
 
     async def setup_hook(self):
+        self.failed_extensions = {}
         for ext in EXTENSIONS:
-            await self.load_extension(ext)
+            try:
+                await self.load_extension(ext)
+            except commands.ExtensionError as exc:
+                if ext in CORE_EXTENSIONS:
+                    raise
+                self.failed_extensions[ext] = exc
+                log.error("Feature %s is OFF because it failed to load; everything else keeps running.",
+                          ext, exc_info=exc)
 
     async def on_ready(self):
         for guild in self.guilds:

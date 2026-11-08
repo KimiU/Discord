@@ -45,7 +45,9 @@ Match types:
   `example.com.evil.test`. Supply a hostname, without `https://` or a URL path.
 - `keyword`: case-insensitive phrase anywhere in the message. The remaining command text is
   the phrase, so multiple words do not need quotes.
-- `code`: the existing code-fence, programming-keyword and programming-link detector.
+- `code`: code blocks, real code syntax (`int x = 5;`, `print(...)`, `def f():`, several lines
+  ending in `;`/`{`/`}`) and programming-site links. Normal chat such as "good point" or
+  "double kill" does not match.
 - `nettix`: links to the existing Nettix .com domains and their subdomains.
 
 Rules run in listed order; the first eligible match wins. There can be at most 100 rules.
@@ -118,5 +120,7 @@ kill switch; use `!redirect disable` in each configured server when needed.
 
 Back up the configured rules file alongside member stats. The default path and its temporary
 file are ignored by Git. If you choose a different path, keep that runtime file out of source
-control too. Invalid rule JSON or saved configuration stops redirect initialization with a
-clear error, instead of replacing the file. Fix the configuration and restart.
+control too. Invalid rule JSON or saved configuration turns redirects off (the file is never
+overwritten) and writes the error to `logs\bot.log`; voice tracking, levels and the other
+features keep running. While redirects are off, `!redirect` does nothing. Fix the
+configuration and restart.
